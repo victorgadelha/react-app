@@ -37,22 +37,24 @@ const App = () => {
       const response = await fetch(endpoint, API_OPTIONS);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch movies");
+        throw new Error(`Failed to fetch movies: ${response.statusText}`);
       }
 
       const data = await response.json();
 
-      if (data.Response === "False") {
-        setErrorMessage(data.Error || "Failed to fetch movies");
+      if (!data.results || !Array.isArray(data.results)) {
+        setErrorMessage("No movies found.");
         setMovieList([]);
         return;
       }
-      setMovieList(data.results || []);
+
+      setMovieList(data.results);
+
       if (query && data.results.length > 0) {
         await updateSearchCount(query, data.results[0]);
       }
     } catch (error) {
-      console.error(`Error fetching movies: ${error}`);
+      console.error(`Error fetching movies: ${error.message}`);
       setErrorMessage("Error fetching movies. Please try again later.");
     } finally {
       setIsLoading(false);
